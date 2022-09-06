@@ -5,8 +5,6 @@ name: Start jksb
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '41 20,21 * * *'
 
 jobs:
   build:
@@ -29,7 +27,7 @@ jobs:
       env:
         mail_id: ${{secrets.mail_id}}
         mail_pd: ${{secrets.mail_pd}}
-        processing_pool: ${{secrets.processing_pool}}
+        processing_pool: ${{secrets.test_processing_pool}}
       run: |
         mv ch_PP-OCRv3_rec_infer-onnx.zip ~/.cnocr/2.2
         python Application.py "$mail_id" "$mail_pd" "$processing_pool"
