@@ -4,4 +4,4 @@ cryptography
 pyOpenSSL
 certifi
 idna
-ddddocr~=1.4.7
+cnocr~=2.2.1

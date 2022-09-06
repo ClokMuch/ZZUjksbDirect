@@ -9,7 +9,7 @@ from time import sleep
 
 import requests
 import urllib3
-import ddddocr
+import cnocr
 
 # 当靠后用户失败时，可考虑增加用户间延迟
 users_delay = 38
@@ -77,6 +77,10 @@ for pop_user in user_pool:
     # 读取描述文件
     with open("description.json", "rb") as file_obj:
         description = json.load(file_obj)
+        file_obj.close()
+    # 读取验证码转换字典
+    with open("captcha_pool.json", 'rb') as file_obj:
+        captcha_convert_pool = json.load(file_obj)
         file_obj.close()
     # 修改 公开表单默认值 为 特定值
     public_data['myvs_13a'] = city_code[:2]
@@ -211,12 +215,33 @@ for pop_user in user_pool:
             raise smtplib.SMTPException
 
     # 创建识别验证码的方法
-    def captcha_bypass(img_link, header_ocr):
-        # 尝试使用 ddddocr 从链接识别验证码
-        captcha_ocr = ddddocr.DdddOcr(show_ad=False)
-        img_b = requests.get(img_link, headers=header_ocr, verify=False).content
-        captcha_result = captcha_ocr.classification(img_b)
-        return captcha_result
+    def captcha_bypass(img_link, header_ocr, convert_pool):
+        # 尝试使用 cnocr 从链接识别验证码，返回数字结果，结果不在转换范围时重试获取最多3次
+        captcha_ocr = cnocr.CnOcr()
+        # captcha_result = captcha_ocr.ocr(img_b)
+        # cnocr 需求本地图片
+        captcha_retry_calc = 0
+        while captcha_retry_calc <= 3:
+            captcha_retry_calc += 1
+            with open('captcha_code', 'wb') as captcha_obj:
+                captcha_obj.write(requests.get(img_link, headers=header_ocr, verify=False).content)
+            captcha_result = captcha_ocr.ocr("captcha_code")
+            captcha_text = captcha_result[0]['text']
+            captcha_output = []
+            for captcha_each_text in captcha_text:
+                if captcha_each_text in convert_pool.keys():
+                    captcha_output.append(convert_pool[captcha_each_text])
+                else:
+                    print("captcha failed.")
+                    continue
+            if len(captcha_output) != 4:
+                continue    # 检查转换结果不是4字符时，重试
+            captcha_output = "".join(captcha_output)
+            break
+        if len(captcha_output) != 4:
+            print("captcha all failed!")
+        else:
+            return captcha_output
 
 
     # 准备请求数据
@@ -344,7 +369,7 @@ for pop_user in user_pool:
                     public_data["fun118"] = fun118_value
                     # 识别验证码并存入表单待提交
                     captcha_tmp = captcha_bypass("https://jksb.v.zzu.edu.cn/vls6sss/zzjlogin3d.dll/getonemencode?p2p="
-                                                 + token_ptopid, header)
+                                                 + token_ptopid, header, captcha_convert_pool)
                     step_2_data["captcha"] = captcha_tmp
                     public_data["myvs_94c"] = captcha_tmp
                     break
@@ -409,7 +434,7 @@ for pop_user in user_pool:
                 if ("感谢你今日上报" in step_3_output) or ("感谢您今日上报" in step_3_output):
                     step_3_state = True
                     break
-                elif "输入验证码（四个数字）" in step_3_output:
+                elif "四个大写" in step_3_output:
                     if step_3_calc < 3:
                         step_3_calc += 1
                         print('用户' + str(now_user) + "提交表格中" + str(step_3_calc)
