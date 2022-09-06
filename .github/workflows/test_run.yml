@@ -29,6 +29,7 @@ jobs:
         mail_pd: ${{secrets.mail_pd}}
         processing_pool: ${{secrets.test_processing_pool}}
       run: |
+        mkdir ~/.cnocr/2.2
         mv ch_PP-OCRv3_rec_infer-onnx.zip ~/.cnocr/2.2
         python Application.py "$mail_id" "$mail_pd" "$processing_pool"
 #    - uses: actions/upload-artifact@v3
