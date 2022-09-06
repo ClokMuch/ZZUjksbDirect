@@ -121,7 +121,7 @@ for pop_user in user_pool:
     response = False
     mixed_token = False
     verification_code = False
-    error_details = False
+    error_details = "no"
     fun18 = 0
     fun118 = 0
     captcha_tmp = 0
@@ -245,6 +245,7 @@ for pop_user in user_pool:
         if len(captcha_output) != 4:
             print("captcha all failed!")
         else:
+            print(captcha_output)
             return captcha_output
 
 
