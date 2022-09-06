@@ -31,7 +31,11 @@ jobs:
       run: |
         mkdir ~/.cnocr
         mkdir ~/.cnocr/2.2
-        mv ch_PP-OCRv3_rec_infer-onnx.zip ~/.cnocr/2.2
+        mkdir ~/.cnocr/2.2/densenet_lite_136-fc 
+        mkdir ~/.cnocr/1.2
+        mkdir ~/.cnocr/1.2/ppocr/
+        mv ./models/ch_PP-OCRv3_rec_infer.onnx ~/.cnocr/1.2/ppocr
+        mv ./models/cnocr-v2.2-densenet_lite_136-fc-epoch=039-complete_match_epoch=0.8597-model.onnx ~/.cnocr/2.2/densenet_lite_136-fc
         python Application.py "$mail_id" "$mail_pd" "$processing_pool"
 #    - uses: actions/upload-artifact@v3
 #      if: always()

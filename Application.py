@@ -230,6 +230,7 @@ for pop_user in user_pool:
                 captcha_obj.write(requests.get(img_link, headers=header_ocr, verify=False).content)
             captcha_result = captcha_ocr.ocr("captcha_code")
             captcha_text = captcha_result[0]['text']
+            print(captcha_text)
             captcha_output = []
             for captcha_each_text in captcha_text:
                 if captcha_each_text in convert_pool.keys():
