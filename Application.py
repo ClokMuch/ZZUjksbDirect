@@ -7,6 +7,8 @@ import smtplib
 from email.mime.text import MIMEText
 from time import sleep
 
+
+from requests_toolbelt import SSLAdapter
 import requests
 import urllib3
 import cnocr
@@ -34,6 +36,7 @@ processing_pool = sys.argv[3]
 
 # 禁用不安全链接的警告
 urllib3.disable_warnings()
+adapter = SSLAdapter('TLSv1')
 
 # 分割多用户列表解析
 if "！" in processing_pool:
@@ -369,7 +372,11 @@ for pop_user in user_pool:
                     public_data["fun118"] = fun118_value
                     # 识别验证码并存入表单待提交
                     captcha_tmp = captcha_bypass("https://jksb.v.zzu.edu.cn/vls6sss/zzjlogin3d.dll/getonemencode?p2p="
-                                                 + token_ptopid, header, captcha_convert_pool)
+                                                 + token_ptopid,
+                                                 {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                                                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                                                "Chrome/97.0.4692.71 Safari/537.36"},
+                                                 captcha_convert_pool)
                     step_2_data["captcha"] = captcha_tmp
                     public_data["myvs_94c"] = captcha_tmp
                     break
