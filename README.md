@@ -3,7 +3,7 @@
 
 [![最后一次Action运行标记](https://github.com/ClokMuch/ZZUjksbDirect/actions/workflows/python-app.yml/badge.svg)](https://github.com/ClokMuch/ZZUjksbDirect/actions/workflows/python-app.yml)
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://opensource.org/licenses/GPL-3.0/)
-[![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
+[![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
 
 &emsp;&emsp;郑州大学健康上报/打卡的自动实现，本方法不再使用无头浏览器模拟登入，而是使用更直接的方式进行，并且更新了可用性.
 

@@ -31,5 +31,6 @@ def give_me_a_captcha_result(image_name, sub_images_with_desc="./captcha_single/
             if len(un_comp) <= 2:
                 captcha_result_output.append(value[1])
                 break
+            # print(un_comp)
     captcha_result_output = ''.join(captcha_result_output)
     return captcha_result_output
