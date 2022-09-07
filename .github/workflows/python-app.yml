@@ -24,20 +24,13 @@ jobs:
 #    - uses: actions/download-artifact@v3
 #      with:
 #        name: Download signed.json
-    - name: Move Model and Start jksb Direct
+    - name: Start jksb Direct
 #      if: always()
       env:
         mail_id: ${{secrets.mail_id}}
         mail_pd: ${{secrets.mail_pd}}
         processing_pool: ${{secrets.processing_pool}}
       run: |
-        mkdir ~/.cnocr
-        mkdir ~/.cnocr/2.2
-        mkdir ~/.cnocr/2.2/densenet_lite_136-fc 
-        mkdir ~/.cnocr/1.2
-        mkdir ~/.cnocr/1.2/ppocr/
-        mv ./models/ch_PP-OCRv3_rec_infer.onnx ~/.cnocr/1.2/ppocr
-        mv ./models/cnocr-v2.2-densenet_lite_136-fc-epoch=039-complete_match_epoch=0.8597-model.onnx ~/.cnocr/2.2/densenet_lite_136-fc
         python Application.py "$mail_id" "$mail_pd" "$processing_pool"
 #    - uses: actions/upload-artifact@v3
 #      if: always()
