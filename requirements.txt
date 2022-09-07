@@ -5,4 +5,4 @@ cryptography
 pyOpenSSL
 certifi
 idna
-cnocr~=2.2.1
+pillow

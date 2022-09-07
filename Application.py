@@ -11,7 +11,9 @@ from time import sleep
 from requests_toolbelt import SSLAdapter
 import requests
 import urllib3
-import cnocr
+
+
+import captcha_process
 
 # 当靠后用户失败时，可考虑增加用户间延迟
 users_delay = 38
@@ -217,37 +219,6 @@ for pop_user in user_pool:
             print('发送结果的邮箱设置可能异常，请检查邮箱和密码配置，以及发信SMTP服务器配置.')
             raise smtplib.SMTPException
 
-    # 创建识别验证码的方法
-    def captcha_bypass(img_link, header_ocr, convert_pool):
-        # 尝试使用 cnocr 从链接识别验证码，返回数字结果，结果不在转换范围时重试获取最多3次
-        captcha_ocr = cnocr.CnOcr()
-        # captcha_result = captcha_ocr.ocr(img_b)
-        # cnocr 需求本地图片
-        captcha_retry_calc = 0
-        while captcha_retry_calc <= 3:
-            captcha_retry_calc += 1
-            with open('captcha_code', 'wb') as captcha_obj:
-                captcha_obj.write(requests.get(img_link, headers=header_ocr, verify=False).content)
-            captcha_result = captcha_ocr.ocr("captcha_code")
-            captcha_text = captcha_result[0]['text']
-            print(captcha_text)
-            captcha_output = []
-            for captcha_each_text in captcha_text:
-                if captcha_each_text in convert_pool.keys():
-                    captcha_output.append(convert_pool[captcha_each_text])
-                else:
-                    print("captcha failed.")
-                    continue
-            if len(captcha_output) != 4:
-                continue    # 检查转换结果不是4字符时，重试
-            captcha_output = "".join(captcha_output)
-            break
-        if len(captcha_output) != 4:
-            print("captcha all failed!")
-        else:
-            print(captcha_output)
-            return captcha_output
-
 
     # 准备请求数据
     session = requests.session()
@@ -373,12 +344,12 @@ for pop_user in user_pool:
                     step_2_data["fun118"] = fun118_value
                     public_data["fun118"] = fun118_value
                     # 识别验证码并存入表单待提交
-                    captcha_tmp = captcha_bypass("https://jksb.v.zzu.edu.cn/vls6sss/zzjlogin3d.dll/getonemencode?p2p="
-                                                 + token_ptopid,
-                                                 {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                                                                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                                                                "Chrome/97.0.4692.71 Safari/537.36"},
-                                                 captcha_convert_pool)
+                    captcha_byte = session.get("https://jksb.v.zzu.edu.cn/vls6sss/zzjlogin3d.dll/getonemencode?p2p=" + token_ptopid,
+                                               headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                                                      "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                                                      "Chrome/97.0.4692.71 Safari/537.36"},
+                                               verify=False)
+                    captcha_tmp = captcha_process.give_me_a_captcha_result(captcha_byte)
                     step_2_data["captcha"] = captcha_tmp
                     public_data["myvs_94c"] = captcha_tmp
                     break
