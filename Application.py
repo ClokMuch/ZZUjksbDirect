@@ -344,12 +344,15 @@ for pop_user in user_pool:
                     step_2_data["fun118"] = fun118_value
                     public_data["fun118"] = fun118_value
                     # 识别验证码并存入表单待提交
-                    captcha_byte = session.get("https://jksb.v.zzu.edu.cn/vls6sss/zzjlogin3d.dll/getonemencode?p2p=" + token_ptopid,
-                                               headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                                                                      "AppleWebKit/537.36 (KHTML, like Gecko) "
-                                                                      "Chrome/97.0.4692.71 Safari/537.36"},
-                                               verify=False).content
-                    captcha_tmp = captcha_process.give_me_a_captcha_result(captcha_byte)
+                    with open("captcha_tmp.bmp", 'wb') as captcha_tmp_file:
+                        captcha_byte = session.get("https://jksb.v.zzu.edu.cn/vls6sss/zzjlogin3d.dll/getonemencode?p2p=" + token_ptopid,
+                                                   headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                                                          "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                                                          "Chrome/97.0.4692.71 Safari/537.36"},
+                                                   verify=False).content
+                        captcha_tmp_file.write(captcha_byte)
+                        captcha_tmp_file.close()
+                    captcha_tmp = captcha_process.give_me_a_captcha_result("captcha_tmp.bmp")
                     step_2_data["captcha"] = captcha_tmp
                     public_data["myvs_94c"] = captcha_tmp
                     break

@@ -7,10 +7,10 @@ import json
 from PIL import Image
 
 
-def give_me_a_captcha_result(image_byte, sub_images_with_desc="./captcha_single/"):
+def give_me_a_captcha_result(image_name, sub_images_with_desc="./captcha_single/"):
     # 裁剪并比较子图片库中符合图片的，返回4位数字 str 型
     captcha_result_output = []
-    captcha_original = Image.open(bytes=image_byte)
+    captcha_original = Image.open(image_name)
     captcha_original_1 = captcha_original.crop((22 * 0, 0, 22 * 1, 24)).histogram()
     captcha_original_2 = captcha_original.crop((22 * 1, 0, 22 * 2, 24)).histogram()
     captcha_original_3 = captcha_original.crop((22 * 2, 0, 22 * 3, 24)).histogram()
