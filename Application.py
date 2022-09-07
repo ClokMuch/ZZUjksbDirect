@@ -348,7 +348,7 @@ for pop_user in user_pool:
                                                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                                                                       "AppleWebKit/537.36 (KHTML, like Gecko) "
                                                                       "Chrome/97.0.4692.71 Safari/537.36"},
-                                               verify=False)
+                                               verify=False).content
                     captcha_tmp = captcha_process.give_me_a_captcha_result(captcha_byte)
                     step_2_data["captcha"] = captcha_tmp
                     public_data["myvs_94c"] = captcha_tmp
