@@ -326,7 +326,7 @@ for pop_user in user_pool:
 
     # 第三步 提交表格并分析结果
     try:
-        del(response)   # 清除上一步 response 避免影响后续判断
+        del response  # 清除上一步 response 避免影响后续判断
     except NameError:
         print(str(now_user) + "第二步没有response，没有回收成功.")
     error_collect_pool["step_3_calc"] = 0  # 设定第三步的计数器
@@ -341,6 +341,7 @@ for pop_user in user_pool:
                 error_collect_pool["step_3_output"] = response.text
                 if ("感谢你今日上报" in error_collect_pool["step_3_output"]) or ("感谢您今日上报" in error_collect_pool["step_3_output"]):
                     error_collect_pool["step_3_succeed"] = "seems like all jksb succeed"
+                    print("用户" + str(now_user) + "进程成功完成.")
                     break
                 elif "四个大写" in error_collect_pool["step_3_output"]:
                     print('用户' + str(now_user) + "提交表格中提示验证码异常，可能识别有误，可能验证码有更新，终止用户打卡，报告失败情况.")
