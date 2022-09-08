@@ -194,7 +194,7 @@ for pop_user in user_pool:
     # 判断第一步情况，若没有成功则跳过本用户循环进入下一个用户
     try:
         tmp = error_collect_pool["step_1_succeed"]
-    except NameError:
+    except KeyError:
         print("用户" + str(now_user) + "第一步没有成功，本用户循环终止.")
         break
 
@@ -258,7 +258,7 @@ for pop_user in user_pool:
                             continue
                     try:
                         tmp = error_collect_pool["step_2_captcha_get_succeed"]
-                    except NameError:
+                    except KeyError:
                         print("用户" + str(now_user) + "获取验证码图片失败，本用户循环终止.")
                         print(str(now_user) + "captcha_image_get_failed_due_to_SSL_error")
                         error_mail_report.report_mail(title="jksb SSLError at get captcha image",
@@ -320,7 +320,7 @@ for pop_user in user_pool:
     # 判断第二步情况，若没有成功则跳过本用户循环进入下一个用户
     try:
         tmp = error_collect_pool["step_2_captcha_get_succeed"]  # 验证码获取是关键
-    except NameError:
+    except KeyError:
         print("用户" + str(now_user) + "第二步没有成功，本用户循环终止.")
         break
 
