@@ -239,6 +239,7 @@ for pop_user in user_pool:
                     now_form["fun118"] = error_collect_pool["step_2_fun118_value"]
                     # 识别验证码并存入表单待提交（如果需要验证码）
                     if "myvs_94c" in error_collect_pool["step_2_output"]:
+                        print("captcha found.")
                         error_collect_pool["step_2_captcha_get_img_calc"] = 0   # 获取验证码计数器
                         while error_collect_pool["step_2_captcha_get_img_calc"] < 4:
                             error_collect_pool["step_2_captcha_get_img_calc"] += 0
@@ -273,6 +274,7 @@ for pop_user in user_pool:
                         now_form["myvs_94c"] = captcha_tmp
                     else:
                         error_collect_pool["step_2_captcha_get_succeed"] = "no captcha found in the form."
+                        print("no captcha now.")
                         del now_form["myvs_94c"]
                     break
                 elif "无权" in error_collect_pool["step_2_output"]:
