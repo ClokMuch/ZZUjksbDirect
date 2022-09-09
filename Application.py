@@ -134,7 +134,7 @@ for pop_user in user_pool:
                                     verify=False)
             if type(response) == requests.models.Response:  # 表示判断回应有效
                 response.encoding = "utf-8"
-                error_collect_pool["step_1_response"] = response.text
+                error_collect_pool["step_1_response"] = response.text.replace(this_user[4], "喵喵喵")
                 if "验证码" in error_collect_pool["step_1_response"]:
                     print('用户' + str(now_user) + "运行时，首次需要验证码，进程结束，建议您在 Action 中合理配置运行时间.")
                     error_mail_report.report_mail(title="jksb login verification code",
@@ -144,7 +144,7 @@ for pop_user in user_pool:
                                                   public_mail_config=initial_mail_config)
                     exit(1)
                 error_collect_pool["mixed_token"] = response.text[response.text.rfind('ptopid'):
-                                                                  response.text.rfind('"}}\r\n</script>')]
+                                                                  response.text.rfind('"}}\r\n</script>')].replace(this_user[4], "喵喵喵")
                 if "hidden" in error_collect_pool["mixed_token"]:
                     error_collect_pool["mixed_token"] = error_collect_pool["mixed_token"] +\
                                                         "#####contain unrecognized info, which suggest it's not a right token."
@@ -216,7 +216,7 @@ for pop_user in user_pool:
             if type(response) == requests.models.Response:
                 response.encoding = "utf-8"
                 error_collect_pool["step_2_fun18_value"] = response.text[response.text.rfind('input type="hidden" name="fun18" value="') +
-                                                                         40:response.text.rfind('" /><input type="hidden" name="sid"')]
+                                                                         40:response.text.rfind('" /><input type="hidden" name="sid"')].replace(this_user[4], "喵喵喵")
             try:
                 del(response)  # 清除上一步 response 避免影响后续判断
             except NameError:
@@ -230,46 +230,50 @@ for pop_user in user_pool:
                                     verify=False)
             if type(response_2) == requests.models.Response:
                 response_2.encoding = "utf-8"
-                error_collect_pool["step_2_output"] = response_2.text
+                error_collect_pool["step_2_output"] = response_2.text.replace(this_user[4], "喵喵喵")
                 if "监测指标" in error_collect_pool["step_2_output"]:
                     error_collect_pool["step_2_succeed"] = "step_2: a from seemed to be gained."
                     # 获取 fun118 值
                     error_collect_pool["step_2_fun118_value"] = error_collect_pool["step_2_output"][error_collect_pool["step_2_output"].rfind('input type="hidden" name="fun118" value="') + 40:
                                                                                                     error_collect_pool["step_2_output"].rfind('" /><input type="hidden" name="fun3"')]
                     now_form["fun118"] = error_collect_pool["step_2_fun118_value"]
-                    # 识别验证码并存入表单待提交
-                    error_collect_pool["step_2_captcha_get_img_calc"] = 0   # 获取验证码计数器
-                    while error_collect_pool["step_2_captcha_get_img_calc"] < 4:
-                        error_collect_pool["step_2_captcha_get_img_calc"] += 0
+                    # 识别验证码并存入表单待提交（如果需要验证码）
+                    if "myvs_94c" in error_collect_pool["step_2_output"]:
+                        error_collect_pool["step_2_captcha_get_img_calc"] = 0   # 获取验证码计数器
+                        while error_collect_pool["step_2_captcha_get_img_calc"] < 4:
+                            error_collect_pool["step_2_captcha_get_img_calc"] += 0
+                            try:
+                                with open("captcha_tmp.bmp", 'wb') as captcha_tmp_file:
+                                    captcha_byte = session.get("https://jksb.v.zzu.edu.cn/vls6sss/zzjlogin3d.dll/getonemencode?p2p="
+                                                               + error_collect_pool["token_ptopid"],
+                                                               headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                                                                      "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                                                                      "Chrome/97.0.4692.71 Safari/537.36"},
+                                                               verify=False).content
+                                    captcha_tmp_file.write(captcha_byte)
+                                    captcha_tmp_file.close()
+                                error_collect_pool["step_2_captcha_get_succeed"] = "captcha got"
+                                break
+                            except requests.exceptions.SSLError as tmp:
+                                error_collect_pool["step_2_get_captcha_img_ssl_detailed"] = str(tmp)
+                                continue
                         try:
-                            with open("captcha_tmp.bmp", 'wb') as captcha_tmp_file:
-                                captcha_byte = session.get("https://jksb.v.zzu.edu.cn/vls6sss/zzjlogin3d.dll/getonemencode?p2p="
-                                                           + error_collect_pool["token_ptopid"],
-                                                           headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                                                                                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                                                                                  "Chrome/97.0.4692.71 Safari/537.36"},
-                                                           verify=False).content
-                                captcha_tmp_file.write(captcha_byte)
-                                captcha_tmp_file.close()
-                            error_collect_pool["step_2_captcha_get_succeed"] = "captcha got"
+                            tmp = error_collect_pool["step_2_captcha_get_succeed"]
+                        except KeyError:
+                            print("用户" + str(now_user) + "获取验证码图片失败，本用户循环终止.")
+                            print(str(now_user) + "captcha_image_get_failed_due_to_SSL_error")
+                            error_mail_report.report_mail(title="jksb SSLError at get captcha image",
+                                                          details=error_collect_pool,
+                                                          config=[mail_id, mail_pd],
+                                                          receiver=this_user[5],
+                                                          public_mail_config=initial_mail_config)
                             break
-                        except requests.exceptions.SSLError as tmp:
-                            error_collect_pool["step_2_get_captcha_img_ssl_detailed"] = str(tmp)
-                            continue
-                    try:
-                        tmp = error_collect_pool["step_2_captcha_get_succeed"]
-                    except KeyError:
-                        print("用户" + str(now_user) + "获取验证码图片失败，本用户循环终止.")
-                        print(str(now_user) + "captcha_image_get_failed_due_to_SSL_error")
-                        error_mail_report.report_mail(title="jksb SSLError at get captcha image",
-                                                      details=error_collect_pool,
-                                                      config=[mail_id, mail_pd],
-                                                      receiver=this_user[5],
-                                                      public_mail_config=initial_mail_config)
-                        break
-                    captcha_tmp = captcha_process.give_me_a_captcha_result("captcha_tmp.bmp")
-                    error_collect_pool["step_2_captcha_code_or_result"] = captcha_tmp
-                    now_form["myvs_94c"] = captcha_tmp
+                        captcha_tmp = captcha_process.give_me_a_captcha_result("captcha_tmp.bmp")
+                        error_collect_pool["step_2_captcha_code_or_result"] = captcha_tmp
+                        now_form["myvs_94c"] = captcha_tmp
+                    else:
+                        error_collect_pool["step_2_captcha_get_succeed"] = "no captcha found in the form."
+                        del now_form["myvs_94c"]
                     break
                 elif "无权" in error_collect_pool["step_2_output"]:
                     print('用户' + str(now_user) + "提交填报人失败，可能是学号或密码有误，"
@@ -338,7 +342,7 @@ for pop_user in user_pool:
                                     verify=False)
             if type(response) == requests.models.Response:
                 response.encoding = "utf-8"
-                error_collect_pool["step_3_output"] = response.text
+                error_collect_pool["step_3_output"] = response.text.replace(this_user[4], "喵喵喵")
                 if ("感谢你今日上报" in error_collect_pool["step_3_output"]) or ("感谢您今日上报" in error_collect_pool["step_3_output"]):
                     error_collect_pool["step_3_succeed"] = "seems like all jksb succeed"
                     print("用户" + str(now_user) + "进程成功完成.")
