@@ -36,4 +36,4 @@ def give_me_a_captcha_result(image_name, sub_images_with_desc="./captcha_single/
     return captcha_result_output
 
 
-# print(give_me_a_captcha_result("tst.bmp"))
+# print(give_me_a_captcha_result("cbs.bmp"))
