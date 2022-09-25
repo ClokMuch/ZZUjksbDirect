@@ -162,7 +162,7 @@ for pop_user in user_pool:
                     now_form['sid'] = error_collect_pool["token_sid"]
                     break
             else:
-                if error_collect_pool["step_1_calc"] < 3:
+                if error_collect_pool["step_1_calc"] <= 3:
                     print('用户' + str(now_user) + "获取 token 中" + str(error_collect_pool["step_1_calc"])
                           + "次失败，没有response，可能学校服务器故障，或者学号或密码有误，将重试.")
                     continue
@@ -177,7 +177,7 @@ for pop_user in user_pool:
                     break
         except requests.exceptions.SSLError as tmp:
             error_collect_pool["step_1_SSLError_details"] = str(tmp)
-            if error_collect_pool["step_1_calc"] < 3:
+            if error_collect_pool["step_1_calc"] <= 3:
                 error_collect_pool["step_1_calc"] += 1
                 print('用户' + str(now_user) + "获取 token 中" + str(error_collect_pool["step_1_calc"]) +
                       "次失败，服务器提示SSLError，可能与连接问题有关，将重试本次循环.")
@@ -196,7 +196,7 @@ for pop_user in user_pool:
         tmp = error_collect_pool["step_1_succeed"]
     except KeyError:
         print("用户" + str(now_user) + "第一步没有成功，本用户循环终止.")
-        break
+        continue
 
     # 第二步 提交填报人
     header["Referer"] = 'https://jksb.v.zzu.edu.cn/vls6sss/zzujksb.dll/jksb'
@@ -296,7 +296,7 @@ for pop_user in user_pool:
                                                   public_mail_config=initial_mail_config)
                     break
             else:
-                if error_collect_pool["step_2_calc"] < 3:
+                if error_collect_pool["step_2_calc"] <= 3:
                     print('用户' + str(now_user) + "提交填报人" + str(error_collect_pool["step_2_calc"])
                           + "次失败，没有response，可能学校服务器故障，或者学号或密码有误，将重试.")
                     continue
@@ -310,7 +310,7 @@ for pop_user in user_pool:
                                                   public_mail_config=initial_mail_config)
                     break
         except requests.exceptions.SSLError as tmp:
-            if error_collect_pool["step_2_calc"] < 3:
+            if error_collect_pool["step_2_calc"] <= 3:
                 print('用户' + str(now_user) + "提交填报人失败，服务器提示SSLError，可能与连接问题有关.")
                 continue
             else:
@@ -328,11 +328,11 @@ for pop_user in user_pool:
         tmp = error_collect_pool["step_2_captcha_get_succeed"]  # 验证码获取是关键
     except KeyError:
         print("用户" + str(now_user) + "第二步没有成功，本用户循环终止.")
-        break
+        continue
 
     # 第三步 提交表格并分析结果
     try:
-        del response  # 清除上一步 response 避免影响后续判断
+        del response_2  # 清除上一步 response 避免影响后续判断
     except NameError:
         print(str(now_user) + "第二步没有response，没有回收成功.")
     error_collect_pool["step_3_calc"] = 0  # 设定第三步的计数器
@@ -377,7 +377,7 @@ for pop_user in user_pool:
                                                   public_mail_config=initial_mail_config)
                     break
             else:
-                if error_collect_pool["step_3_calc"] < 3:
+                if error_collect_pool["step_3_calc"] <= 3:
                     print('用户' + str(now_user) + "提交表格没有response，可能学校服务器故障，将重试.")
                     continue
                 else:
@@ -390,7 +390,7 @@ for pop_user in user_pool:
                         public_mail_config=initial_mail_config)
                     break
         except requests.exceptions.SSLError as tmp:
-            if error_collect_pool["step_3_calc"] < 3:
+            if error_collect_pool["step_3_calc"] <= 3:
                 error_collect_pool["step_3_ssl_error_detail"] = str(tmp)
                 print('用户' + str(now_user) + "提交表格，服务器提示SSLError，可能与连接问题有关，将重试.")
                 continue
