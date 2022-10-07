@@ -5,6 +5,7 @@
 import json
 
 from PIL import Image
+import ddddocr
 
 
 def give_me_a_captcha_result(image_name, sub_images_with_desc="./captcha_single/"):
@@ -37,3 +38,16 @@ def give_me_a_captcha_result(image_name, sub_images_with_desc="./captcha_single/
 
 
 # print(give_me_a_captcha_result("cbs.bmp"))
+
+def bypass_login_captcha(image_name):
+    # 申请后端创建指定验证码，并调用 ddddocr 识别验证码，识别来自文件
+    captcha_ocr = ddddocr.DdddOcr(show_ad=False)
+    with open("zzjgetimg.gif", "rb") as login_tmp:
+        login_bypass_img = login_tmp.read()
+    captcha_result = captcha_ocr.classification(login_bypass_img)
+    print("login captcha detected.")
+    return captcha_result
+
+
+# print(bypass_login_captcha("zzjgetimg.gif"))
+

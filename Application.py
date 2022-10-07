@@ -136,13 +136,43 @@ for pop_user in user_pool:
                 response.encoding = "utf-8"
                 error_collect_pool["step_1_response"] = response.text.replace(this_user[4], "喵喵喵")
                 if "验证码" in error_collect_pool["step_1_response"]:
-                    print('用户' + str(now_user) + "运行时，首次需要验证码，进程结束，建议您在 Action 中合理配置运行时间.")
-                    error_mail_report.report_mail(title="jksb login verification code",
-                                                  details=error_collect_pool,
-                                                  config=[mail_id, mail_pd],
-                                                  receiver=this_user[5],
-                                                  public_mail_config=initial_mail_config)
-                    exit(1)
+                    error_collect_pool["login_captcha_detected"] = "login captcha detected, trying to bypass."
+                    print('用户' + str(now_user) + "运行时，需要登入验证码，准备尝试识别，建议您在 Action 中合理配置运行时间.")
+                    error_collect_pool["login_captcha_calc"] = 0    # 登入验证码计数器
+                    # error_collect_pool["login_captcha_result_pool"] = []
+                    while error_collect_pool["login_captcha_calc"] <= 3:
+                        with open("login_captcha_tmp.bmp", "wb") as login_captcha_tmp_file:
+                            login_captcha_byte = session.get(
+                                "https://jksb.v.zzu.edu.cn/vls6sss/zzjlogin3d.dll/zzjgetimg?ids=1111",
+                                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                                       "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                                       "Chrome/97.0.4692.71 Safari/537.36"},
+                                verify=False).content
+                            login_captcha_tmp_file.write(login_captcha_byte)
+                            login_captcha_tmp_file.close()
+                        login_captcha_result = captcha_process.bypass_login_captcha(image_name="login_captcha_tmp.bmp")
+                        # error_collect_pool["login_captcha_result_pool"].append(login_captcha_result)
+                        if len(login_captcha_result) != 4:
+                            print("login captcha bypass failed: wrong length")
+                            now_form["ver6"] = login_captcha_result
+                            break
+                        else:
+                            error_collect_pool["login_captcha_state"] = "login captcha bypassed"
+                            print("login captcha bypass succeed")
+                        if error_collect_pool["login_captcha_calc"] <= 3:
+                            error_collect_pool["step_1_calc"] += 1
+                            print('用户' + str(now_user) + "突破登入验证码中" + str(error_collect_pool["step_1_calc"]) +
+                                  "次失败，将重试本次循环.")
+                            continue
+                        else:
+                            print('用户' + str(now_user) + "突破登入验证码中" + str(error_collect_pool["step_1_calc"])
+                                  + "次失败，次数达到预期，终止整体打卡进程，报告失败情况.")
+                            error_mail_report.report_mail(title="jksb login verification code",
+                                                          details=error_collect_pool,
+                                                          config=[mail_id, mail_pd],
+                                                          receiver=this_user[5],
+                                                          public_mail_config=initial_mail_config)
+                            exit(1)
                 error_collect_pool["mixed_token"] = response.text[response.text.rfind('ptopid'):
                                                                   response.text.rfind('"}}\r\n</script>')].replace(this_user[4], "喵喵喵")
                 if "hidden" in error_collect_pool["mixed_token"]:

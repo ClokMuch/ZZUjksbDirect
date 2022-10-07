@@ -6,3 +6,4 @@ pyOpenSSL
 certifi
 idna
 pillow
+ddddocr
