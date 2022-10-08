@@ -152,15 +152,15 @@ for pop_user in user_pool:
                             login_captcha_tmp_file.close()
                         login_captcha_result = captcha_process.bypass_login_captcha(image_name="login_captcha_tmp.bmp")
                         # error_collect_pool["login_captcha_result_pool"].append(login_captcha_result)
-                        if len(login_captcha_result) != 4:
-                            print("login captcha bypass failed: wrong length")
+                        if len(login_captcha_result) == 4:
+                            print("login captcha bypassed")
                             now_form["ver6"] = login_captcha_result
                             break
                         else:
-                            error_collect_pool["login_captcha_state"] = "login captcha bypassed"
-                            print("login captcha bypass succeed")
+                            error_collect_pool["login_captcha_state"] = "login captcha bypass failed: wrong length"
+                            print("login captcha bypass failed: wrong length")
                         if error_collect_pool["login_captcha_calc"] <= 3:
-                            error_collect_pool["step_1_calc"] += 1
+                            error_collect_pool["login_captcha_calc"] += 1
                             print('用户' + str(now_user) + "突破登入验证码中" + str(error_collect_pool["step_1_calc"]) +
                                   "次失败，将重试本次循环.")
                             continue
