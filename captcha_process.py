@@ -42,7 +42,7 @@ def give_me_a_captcha_result(image_name, sub_images_with_desc="./captcha_single/
 def bypass_login_captcha(image_name):
     # 申请后端创建指定验证码，并调用 ddddocr 识别验证码，识别来自文件
     captcha_ocr = ddddocr.DdddOcr(show_ad=False)
-    with open("zzjgetimg.gif", "rb") as login_tmp:
+    with open(image_name, "rb") as login_tmp:
         login_bypass_img = login_tmp.read()
     captcha_result = captcha_ocr.classification(login_bypass_img)
     print("login captcha detected.")
