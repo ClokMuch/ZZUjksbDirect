@@ -5,7 +5,7 @@
 # Python 自带库
 import sys
 import json
-from time import sleep
+from time import sleep, time
 
 # Python 非自带的/第三方库
 from requests_toolbelt import SSLAdapter
@@ -17,7 +17,7 @@ import error_mail_report
 import captcha_process
 
 # 整个运行周期都要保留或用到的变量
-users_delay = 38    # 运行延迟，如果出现登入步骤的验证码可尝试增加此值
+users_delay = 45    # 运行延迟，如果出现登入步骤的验证码可尝试增加此值
 # 虚假地载入静态配置
 with open("config.json", "rb") as file_object:
     # 载入默认表单
@@ -65,7 +65,9 @@ print("当前用户数量为 " + str(len(user_pool)))
 # 对分割后用户列表中的每个用户进行处理
 now_user = 0    # 标记处理用户的序号
 for pop_user in user_pool:
-    error_collect_pool = {}  # 用于收集错误信息，尽可能实现用户间信息不交叉
+    error_collect_pool = {
+        "time_dict": {"standard_time": time()}
+    }  # 用于收集错误信息，尽可能实现用户间信息不交叉
     now_user += 1
     now_form = initial_config.copy()
     error_collect_pool['initialization'] = "succeed for user " + str(now_user)
@@ -176,13 +178,31 @@ for pop_user in user_pool:
                 error_collect_pool["mixed_token"] = response.text[response.text.rfind('ptopid'):
                                                                   response.text.rfind('"}}\r\n</script>')].replace(this_user[4], "喵喵喵")
                 if "hidden" in error_collect_pool["mixed_token"]:
-                    error_collect_pool["mixed_token"] = error_collect_pool["mixed_token"] +\
-                                                        "#####contain unrecognized info, which suggest it's not a right token."
-                    print("用户 " + str(now_user) + " token 中含有不应出现的字符，将重新开始本部分循环.")
-                    continue
+                    if error_collect_pool["step_1_calc"] <= 3:
+                        error_collect_pool["mixed_token"] = error_collect_pool["mixed_token"] + \
+                                                            "#####contain unrecognized info, which suggest it's not a right token."
+                        print("用户 " + str(now_user) + " token 中含有不应出现的字符，将重新开始本部分循环.")
+                        continue
+                    else:
+                        print('用户' + str(now_user) + "解析 token 中含有不应出现的字符，步骤总次数达到预期，终止本用户打卡，报告失败情况.")
+                        error_mail_report.report_mail(title="jksb wrong token",
+                                                      details=error_collect_pool,
+                                                      config=[mail_id, mail_pd],
+                                                      receiver=this_user[5],
+                                                      public_mail_config=initial_mail_config)
+                        break
                 elif not error_collect_pool["mixed_token"]:
-                    print("用户 " + str(now_user) + " token 解析后为空，将重新开始本部分循环.")
-                    continue
+                    if error_collect_pool["step_1_calc"] <= 3:
+                        print("用户 " + str(now_user) + " token 解析后为空，可能是学校服务器故障，将重新开始本部分循环.")
+                        continue
+                    else:
+                        print("用户 " + str(now_user) + " token 解析后为空，总次数达到预期，终止本用户打卡，报告失败情况.")
+                        error_mail_report.report_mail(title="jksb empty token",
+                                                      details=error_collect_pool,
+                                                      config=[mail_id, mail_pd],
+                                                      receiver=this_user[5],
+                                                      public_mail_config=initial_mail_config)
+                        break
                 else:
                     error_collect_pool["token_ptopid"] = error_collect_pool["mixed_token"][7:
                                                                                            error_collect_pool["mixed_token"].rfind('&sid=')]
