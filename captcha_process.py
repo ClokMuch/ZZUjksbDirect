@@ -49,5 +49,10 @@ def bypass_login_captcha(image_name):
     return captcha_result
 
 
+def handle_login_captcha_step_by_step(uid, upd):
+    # 模拟实际情况，逐步突破验证码
+    pass
+
+
 # print(bypass_login_captcha("zzjgetimg.gif"))
 
