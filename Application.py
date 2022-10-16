@@ -228,7 +228,6 @@ for pop_user in user_pool:
         except requests.exceptions.SSLError as tmp:
             error_collect_pool["step_1_SSLError_details"] = str(tmp)
             if error_collect_pool["step_1_calc"] <= 3:
-                error_collect_pool["step_1_calc"] += 1
                 print('用户' + str(now_user) + "获取 token 中" + str(error_collect_pool["step_1_calc"]) +
                       "次失败，服务器提示SSLError，可能与连接问题有关，将重试本次循环.")
                 continue
@@ -292,7 +291,7 @@ for pop_user in user_pool:
                         print("captcha found.")
                         error_collect_pool["step_2_captcha_get_img_calc"] = 0   # 获取验证码计数器
                         while error_collect_pool["step_2_captcha_get_img_calc"] < 4:
-                            error_collect_pool["step_2_captcha_get_img_calc"] += 0
+                            error_collect_pool["step_2_captcha_get_img_calc"] += 1
                             try:
                                 with open("captcha_tmp.bmp", 'wb') as captcha_tmp_file:
                                     captcha_byte = session.get("https://jksb.v.zzu.edu.cn/vls6sss/zzjlogin3d.dll/getonemencode?p2p="
