@@ -100,19 +100,10 @@ for pop_user in user_pool:
     else:
         now_form["myvs_13c"] = this_user[3]
 
-    # 解析条目长度为 7 时的情况（情况包含状态描述或疫苗接种情况任一）
+    # 解析条目长度为 7 时的情况（情况包含状态描述）
     if len(this_user) == 7:
-        if len(this_user[6] == 1):
-            now_form['myvs_26'] = this_user[6]
-        else:
-            for tmp in initial_description["symbols"]:
-                if tmp in this_user[6].lower():
-                    now_form[initial_description[tmp][0]] = initial_description[tmp][1]
-    # 解析条目长度为 8 时的情况（按顺序包含疫苗接种及状态描述）
-    if len(this_user) == 8:
-        now_form['myvs_26'] = this_user[6]
         for tmp in initial_description["symbols"]:
-            if tmp in this_user[7].lower():
+            if tmp in this_user[6].lower():
                 now_form[initial_description[tmp][0]] = initial_description[tmp][1]
 
     sleep(users_delay)   # 每个用户之间延时，以提高成功率
@@ -123,15 +114,17 @@ for pop_user in user_pool:
     # 第一步 获取 token
     error_collect_pool["step_1_calc"] = 0   # 设定第一步的计数器
     header["Referer"] = ":https://jksb.v.zzu.edu.cn/vls6sss/zzujksb.dll/first0"
+    # 构造第一步发送数据
+    error_collect_pool["step_1_data"] = {"uid": this_user[0],
+                                         "upw": this_user[1],
+                                         "smbtn": "进入健康状况上报平台",
+                                         "hh28": "722"}
     while error_collect_pool["step_1_calc"] < 4:
         error_collect_pool["step_1_calc"] += 1
         try:
             # 接收回应数据
             response = session.post("https://jksb.v.zzu.edu.cn/vls6sss/zzujksb.dll/login",
-                                    data={"uid": this_user[0],
-                                          "upw": this_user[1],
-                                          "smbtn": "进入健康状况上报平台",
-                                          "hh28": "722"},
+                                    data=error_collect_pool["step_1_data"],
                                     headers=header,
                                     verify=False)
             if type(response) == requests.models.Response:  # 表示判断回应有效
@@ -156,7 +149,7 @@ for pop_user in user_pool:
                         # error_collect_pool["login_captcha_result_pool"].append(login_captcha_result)
                         if len(login_captcha_result) == 4:
                             print("login captcha bypassed")
-                            now_form["ver6"] = login_captcha_result
+                            error_collect_pool["step_1_data"]["ver6"] = login_captcha_result
                             break
                         else:
                             error_collect_pool["login_captcha_state"] = "login captcha bypass failed: wrong length"
@@ -257,35 +250,54 @@ for pop_user in user_pool:
     while error_collect_pool["step_2_calc"] < 4:
         error_collect_pool["step_2_calc"] += 1
         try:
-            # 获取 fun18 的值
+            # 获取 隐藏表格
             tmp = 'https://jksb.v.zzu.edu.cn/vls6sss/zzujksb.dll/jksb?ptopid=' + error_collect_pool["token_ptopid"] + \
                   '&sid=' + error_collect_pool["token_sid"] + \
                   '&fun2='
             response = session.get(tmp, headers=header, verify=False)
             if type(response) == requests.models.Response:
                 response.encoding = "utf-8"
-                error_collect_pool["step_2_fun18_value"] = response.text[response.text.rfind('input type="hidden" name="fun18" value="') +
-                                                                         40:response.text.rfind('" /><input type="hidden" name="sid"')].replace(this_user[4], "喵喵喵")
+                # 查询、处理未知变量的循环
+                error_collect_pool["step_2_form"] = response.text[response.text.find('<input type="hidden" name="'):response.text.rfind('"></form>')+2].split('input type="hidden"').replace(this_user[4], "喵喵喵")
+                error_collect_pool["hidden_form"] = {}
+                for tmp2 in error_collect_pool["step_2_form"]:
+                    if ('value="' in tmp2) and ('name="' in tmp2):
+                        each_hidden_name = tmp2[tmp2.find('name="') + 6:tmp2.rfind('" value="')]
+                        each_hidden_value = tmp2[tmp2.find('value="') + 7:tmp2.rfind('"')]
+                        error_collect_pool["hidden_form"][each_hidden_name] = each_hidden_value
+                # 清除重复或干扰键值对
+                try:
+                    del error_collect_pool["hidden_form"]["did"]
+                except KeyError as error_tmp:
+                    print("hidden form no 'did': " + error_tmp)
+                try:
+                    del error_collect_pool["hidden_form"]["sid"]
+                except KeyError as error_tmp:
+                    print("hidden form no 'sid': " + error_tmp)
+                try:
+                    del error_collect_pool["hidden_form"]["ptopid"]
+                except KeyError as error_tmp:
+                    print("hidden form no 'ptopid': " + error_tmp)
+                # 构造第二步发送数据
+                error_collect_pool["step_2_data"] = {'ptopid': error_collect_pool["token_ptopid"],
+                                                     'sid': error_collect_pool["token_sid"],
+                                                     'did': '1'}
+                error_collect_pool["step_2_data"].update(error_collect_pool["hidden_form"])
             try:
                 del(response)  # 清除上一步 response 避免影响后续判断
             except NameError:
-                print(str(now_user) + "获取 fun18 没有response，没有回收成功.")
+                print(str(now_user) + "获取 隐藏表格 没有response，没有回收成功.")
             response_2 = session.post('https://jksb.v.zzu.edu.cn/vls6sss/zzujksb.dll/jksb',
                                     headers=header,
-                                    data={'ptopid': error_collect_pool["token_ptopid"],
-                                          'sid': error_collect_pool["token_sid"],
-                                          'fun18': error_collect_pool["step_2_fun18_value"],
-                                          'day6': 'b', 'did': '1', 'men6': 'a'},
+                                    data=error_collect_pool["step_2_data"],
                                     verify=False)
             if type(response_2) == requests.models.Response:
                 response_2.encoding = "utf-8"
                 error_collect_pool["step_2_output"] = response_2.text.replace(this_user[4], "喵喵喵")
                 if "监测指标" in error_collect_pool["step_2_output"]:
                     error_collect_pool["step_2_succeed"] = "step_2: a from seemed to be gained."
-                    # 获取 fun118 值
-                    error_collect_pool["step_2_fun118_value"] = error_collect_pool["step_2_output"][error_collect_pool["step_2_output"].rfind('input type="hidden" name="fun118" value="') + 40:
-                                                                                                    error_collect_pool["step_2_output"].rfind('" /><input type="hidden" name="fun3"')]
-                    now_form["fun118"] = error_collect_pool["step_2_fun118_value"]
+                    # 填入 隐藏表格
+                    now_form.update(error_collect_pool["hidden_form"])
                     # 识别验证码并存入表单待提交（如果需要验证码）
                     if "myvs_94c" in error_collect_pool["step_2_output"]:
                         print("captcha found.")
