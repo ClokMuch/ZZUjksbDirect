@@ -258,7 +258,7 @@ for pop_user in user_pool:
             if type(response) == requests.models.Response:
                 response.encoding = "utf-8"
                 # 查询、处理未知变量的循环
-                error_collect_pool["step_2_form"] = response.text[response.text.find('<input type="hidden" name="'):response.text.rfind('"></form>')+2].split('input type="hidden"').replace(this_user[4], "喵喵喵")
+                error_collect_pool["step_2_form"] = response.text[response.text.find('<input type="hidden" name="'):response.text.rfind('"></form>')+2].replace(this_user[4], "喵喵喵").split('input type="hidden"')
                 error_collect_pool["hidden_form"] = {}
                 for tmp2 in error_collect_pool["step_2_form"]:
                     if ('value="' in tmp2) and ('name="' in tmp2):
